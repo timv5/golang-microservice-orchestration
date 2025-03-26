@@ -48,8 +48,8 @@ func (orderService *OrderService) Create(request request.OrderRequest) (response
 	}
 
 	// todo
-	//tx := orderService.getDbConnection()
-	//orderEntity, err := orderService.orderRepository.Insert(tx, request)
+	tx := orderService.getDbConnection()
+	orderEntity, err := orderService.orderRepository.Insert(tx, request)
 	//if err != nil {
 	//	return response.OrderResponse{}, err
 	//}
@@ -60,7 +60,17 @@ func (orderService *OrderService) Create(request request.OrderRequest) (response
 	//walletRequest := request2.WalletRequest{RequestID: request.RequestId, request.ProductId, request.}
 	//orderService.walletClient.Charge()
 
-	return response.OrderResponse{}, nil
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return response.OrderResponse{}, err
+	}
+
+	return response.OrderResponse{
+		ProductOrderId: orderEntity.ProductOrderId,
+		CreateDate:     orderEntity.CreateDate,
+		ProductId:      orderEntity.ProductId,
+	}, nil
 }
 
 func (orderService *OrderService) getDbConnection() *gorm.DB {

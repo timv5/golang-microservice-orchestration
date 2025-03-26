@@ -9,7 +9,7 @@ import (
 )
 
 type OrderRepositoryInterface interface {
-	Insert(tx *gorm.DB, order request.OrderRequest) (model.Order, error)
+	Insert(tx *gorm.DB, order request.OrderRequest) (model.ProductOrder, error)
 }
 
 type OrderRepository struct{}
@@ -18,9 +18,9 @@ func NewOrderRepository() *OrderRepository {
 	return &OrderRepository{}
 }
 
-func (repo *OrderRepository) Insert(tx *gorm.DB, order request.OrderRequest) (model.Order, error) {
+func (repo *OrderRepository) Insert(tx *gorm.DB, order request.OrderRequest) (model.ProductOrder, error) {
 	nowTime := time.Now()
-	orderEntity := model.Order{
+	orderEntity := model.ProductOrder{
 		ProductOrderId: uuid.NewV4().String(),
 		ProductId:      order.ProductId,
 		CreateDate:     nowTime,
@@ -28,7 +28,7 @@ func (repo *OrderRepository) Insert(tx *gorm.DB, order request.OrderRequest) (mo
 
 	savedOrderEntity := tx.Create(&orderEntity)
 	if savedOrderEntity.Error != nil {
-		return model.Order{}, savedOrderEntity.Error
+		return model.ProductOrder{}, savedOrderEntity.Error
 	}
 
 	return orderEntity, nil
