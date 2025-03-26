@@ -1,8 +1,32 @@
-create table messages
+create table product
 (
-    message_id varchar(512) not null,
-    header varchar(128),
-    body varchar(512),
-    created_at date,
-    updated_at date
+    product_id varchar(512) not null,
+    name varchar(128),
+    price numeric,
+    create_date date,
+    update_date date
 );
+
+create table product_order
+(
+    product_order_id varchar(512) not null,
+    product_id varchar(512) not null,
+    create_date date
+);
+
+create table account
+(
+    account_id varchar(512) not null,
+    amount numeric,
+    update_date date
+);
+
+create table transaction
+(
+    transaction_id varchar(512) not null,
+    product_id varchar(512) not null,
+    amount numeric,
+    create_date date
+);
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
