@@ -15,11 +15,12 @@ type OrderServiceInterface interface {
 }
 
 type OrderService struct {
-	conf            *configs.Config
-	postgresDB      *gorm.DB
-	orderRepository *repository.OrderRepository
-	redisService    *RedisService
-	walletClient    *client.WalletClient
+	conf              *configs.Config
+	postgresDB        *gorm.DB
+	orderRepository   *repository.OrderRepository
+	redisService      *RedisService
+	walletClient      *client.WalletClient
+	productRepository *repository.ProductRepository
 }
 
 func NewOrderService(
@@ -27,13 +28,15 @@ func NewOrderService(
 	postgresDB *gorm.DB,
 	orderRepository *repository.OrderRepository,
 	redisService *RedisService,
-	walletClient *client.WalletClient) *OrderService {
+	walletClient *client.WalletClient,
+	productRepository *repository.ProductRepository) *OrderService {
 	return &OrderService{
-		conf:            config,
-		postgresDB:      postgresDB,
-		orderRepository: orderRepository,
-		redisService:    redisService,
-		walletClient:    walletClient,
+		conf:              config,
+		postgresDB:        postgresDB,
+		orderRepository:   orderRepository,
+		redisService:      redisService,
+		walletClient:      walletClient,
+		productRepository: productRepository,
 	}
 }
 
@@ -42,19 +45,24 @@ func (orderService *OrderService) Create(request request.OrderRequest) (response
 	if err != nil {
 		return response.OrderResponse{}, err
 	}
-
 	if !valid {
 		return response.OrderResponse{}, errors.New("idempotency validation error")
 	}
 
-	// todo
 	tx := orderService.getDbConnection()
-	orderEntity, err := orderService.orderRepository.Insert(tx, request)
-	//if err != nil {
-	//	return response.OrderResponse{}, err
-	//}
+	exists, err := orderService.productRepository.Exists(tx, request.ProductId)
+	if err != nil {
+		return response.OrderResponse{}, err
+	}
 
-	// fetch and validate product
+	if !exists {
+		return response.OrderResponse{}, errors.New("product does not exist")
+	}
+
+	orderEntity, err := orderService.orderRepository.Insert(tx, request)
+	if err != nil {
+		return response.OrderResponse{}, err
+	}
 
 	// call wallet-service
 	//walletRequest := request2.WalletRequest{RequestID: request.RequestId, request.ProductId, request.}

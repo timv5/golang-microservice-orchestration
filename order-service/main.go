@@ -37,10 +37,11 @@ func main() {
 
 	// initialize repository
 	orderRepository := repository.NewOrderRepository()
+	productRepository := repository.NewProductRepository()
 
 	// initialize service
 	redisService := service.NewRedisService(redisDatabase)
-	orderService := service.NewOrderService(&config, postgresDB, orderRepository, redisService, walletClient)
+	orderService := service.NewOrderService(&config, postgresDB, orderRepository, redisService, walletClient, productRepository)
 
 	// initialize handlers
 	OrderController = handler.NewOrderHandler(postgresDB, orderService, &config)
