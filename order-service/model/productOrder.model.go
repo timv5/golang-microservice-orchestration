@@ -7,4 +7,5 @@ type ProductOrder struct {
 	ProductId      string    `gorm:"not null" sql:"productId"`
 	AccountId      string    `gorm:"not null" sql:"accountId"`
 	CreateDate     time.Time `gorm:"not null" sql:"createDate"`
+	RequestId      string    `gorm:"not null" sql:"requestId"`
 }

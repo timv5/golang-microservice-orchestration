@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"payment-service/dto/request"
 	"payment-service/model"
@@ -35,7 +36,7 @@ func NewPaymentService(
 }
 
 func (ps *PaymentService) ProcessPayment(req request.PaymentRequest) error {
-	valid, err := ps.redisService.IdempotencyValidation(req.RequestID)
+	valid, err := ps.redisService.IdempotencyValidation(req.UUID)
 	if err != nil {
 		return err
 	}
@@ -50,10 +51,11 @@ func (ps *PaymentService) ProcessPayment(req request.PaymentRequest) error {
 	}
 
 	newTxn := &model.Transaction{
-		TransactionId: req.RequestID,
+		TransactionId: uuid.NewV4().String(),
 		ProductId:     req.ProductId,
 		Amount:        req.Amount,
 		CreateDate:    time.Now().UTC(),
+		RequestId:     req.RequestID,
 	}
 	if err := ps.transactionRepository.Insert(tx, newTxn); err != nil {
 		tx.Rollback()

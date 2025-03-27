@@ -12,7 +12,8 @@ create table product_orders
     product_order_id varchar(512) not null,
     product_id varchar(512) not null,
     account_id varchar(512) not null,
-    create_date date
+    create_date date,
+    request_id varchar(512) not null
 );
 
 create table accounts
@@ -27,7 +28,8 @@ create table transactions
     transaction_id varchar(512) not null,
     product_id varchar(512) not null,
     amount numeric,
-    create_date date
+    create_date date,
+    request_id varchar(512) not null
 );
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

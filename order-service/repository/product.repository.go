@@ -1,9 +1,12 @@
 package repository
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"order-service/model"
+)
 
 type ProductRepositoryInterface interface {
-	Exists(tx *gorm.DB, productId string) (bool, error)
+	Fetch(tx *gorm.DB, productId string) (*model.Product, bool, error)
 }
 
 type ProductRepository struct{}
@@ -12,11 +15,14 @@ func NewProductRepository() *ProductRepository {
 	return &ProductRepository{}
 }
 
-func (repo *ProductRepository) Exists(tx *gorm.DB, productId string) (bool, error) {
-	var count int64
-	err := tx.Table("products").Where("product_id = ?", productId).Count(&count).Error
+func (repo *ProductRepository) Fetch(tx *gorm.DB, productId string) (*model.Product, bool, error) {
+	var product model.Product
+	err := tx.Table("products").Where("product_id = ?", productId).First(&product).Error
 	if err != nil {
-		return false, err
+		if err == gorm.ErrRecordNotFound {
+			return nil, false, nil
+		}
+		return nil, false, err
 	}
-	return count > 0, nil
+	return &product, true, nil
 }

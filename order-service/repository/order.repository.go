@@ -25,6 +25,7 @@ func (repo *OrderRepository) Insert(tx *gorm.DB, order request.OrderRequest) (mo
 		ProductId:      order.ProductId,
 		CreateDate:     nowTime,
 		AccountId:      order.AccountID,
+		RequestId:      order.RequestId,
 	}
 
 	savedOrderEntity := tx.Create(&orderEntity)

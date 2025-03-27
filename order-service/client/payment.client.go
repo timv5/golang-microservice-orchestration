@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"order-service/client/request"
 	"time"
 )
 
 type PaymentClientInterface interface {
-	Process(payload request.PaymentRequest) (int, error)
+	Process(payload PaymentRequest) (int, error)
 }
 
 type PaymentClient struct {
@@ -27,7 +26,7 @@ func NewPaymentClient(baseURL string) *PaymentClient {
 	}
 }
 
-func (wc *PaymentClient) Process(payload request.PaymentRequest) (int, error) {
+func (wc *PaymentClient) Process(payload PaymentRequest) (int, error) {
 	url := fmt.Sprintf("%s/api/payment/process", wc.BaseURL)
 
 	bodyBytes, err := json.Marshal(payload)
