@@ -32,7 +32,7 @@ func main() {
 		panic("Failed to connect to DB")
 	}
 
-	walletClient := client.NewWalletClient("TODO")
+	paymentClient := client.NewPaymentClient("TODO")
 	redisDatabase := initializeRedisCache(config)
 
 	// initialize repository
@@ -41,7 +41,7 @@ func main() {
 
 	// initialize service
 	redisService := service.NewRedisService(redisDatabase)
-	orderService := service.NewOrderService(&config, postgresDB, orderRepository, redisService, walletClient, productRepository)
+	orderService := service.NewOrderService(&config, postgresDB, orderRepository, redisService, paymentClient, productRepository)
 
 	// initialize handlers
 	OrderController = handler.NewOrderHandler(postgresDB, orderService, &config)

@@ -36,7 +36,17 @@ func (orderHandler OrderHandler) MakeOrder(ctx *gin.Context) {
 	}
 
 	if orderRequest.RequestId == "" {
-		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "wrong orderRequest params"})
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "wrong orderRequest params, missing request id"})
+		return
+	}
+
+	if orderRequest.ProductId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "wrong orderRequest params, missing product"})
+		return
+	}
+
+	if orderRequest.AccountID == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"status": "error", "message": "wrong orderRequest params, missing account"})
 		return
 	}
 

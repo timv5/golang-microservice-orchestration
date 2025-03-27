@@ -19,7 +19,7 @@ type OrderService struct {
 	postgresDB        *gorm.DB
 	orderRepository   *repository.OrderRepository
 	redisService      *RedisService
-	walletClient      *client.WalletClient
+	paymentClient     *client.PaymentClient
 	productRepository *repository.ProductRepository
 }
 
@@ -28,14 +28,14 @@ func NewOrderService(
 	postgresDB *gorm.DB,
 	orderRepository *repository.OrderRepository,
 	redisService *RedisService,
-	walletClient *client.WalletClient,
+	paymentClient *client.PaymentClient,
 	productRepository *repository.ProductRepository) *OrderService {
 	return &OrderService{
 		conf:              config,
 		postgresDB:        postgresDB,
 		orderRepository:   orderRepository,
 		redisService:      redisService,
-		walletClient:      walletClient,
+		paymentClient:     paymentClient,
 		productRepository: productRepository,
 	}
 }
@@ -64,9 +64,7 @@ func (orderService *OrderService) Create(request request.OrderRequest) (response
 		return response.OrderResponse{}, err
 	}
 
-	// call wallet-service
-	//walletRequest := request2.WalletRequest{RequestID: request.RequestId, request.ProductId, request.}
-	//orderService.walletClient.Charge()
+	// call payment-service
 
 	err = tx.Commit().Error
 	if err != nil {
@@ -78,6 +76,7 @@ func (orderService *OrderService) Create(request request.OrderRequest) (response
 		ProductOrderId: orderEntity.ProductOrderId,
 		CreateDate:     orderEntity.CreateDate,
 		ProductId:      orderEntity.ProductId,
+		AccountId:      orderEntity.AccountId,
 	}, nil
 }
 

@@ -11,6 +11,7 @@ create table product_orders
 (
     product_order_id varchar(512) not null,
     product_id varchar(512) not null,
+    account_id varchar(512) not null,
     create_date date
 );
 

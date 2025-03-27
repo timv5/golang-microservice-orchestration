@@ -9,17 +9,17 @@ import (
 	"time"
 )
 
-type WalletClientInterface interface {
-	Charge(payload request.WalletRequest) (int, error)
+type PaymentClientInterface interface {
+	Charge(payload request.PaymentRequest) (int, error)
 }
 
-type WalletClient struct {
+type PaymentClient struct {
 	BaseURL    string
 	HTTPClient *http.Client
 }
 
-func NewWalletClient(baseURL string) *WalletClient {
-	return &WalletClient{
+func NewPaymentClient(baseURL string) *PaymentClient {
+	return &PaymentClient{
 		BaseURL: baseURL,
 		HTTPClient: &http.Client{
 			Timeout: 10 * time.Second,
@@ -27,8 +27,8 @@ func NewWalletClient(baseURL string) *WalletClient {
 	}
 }
 
-func (wc *WalletClient) Charge(payload request.WalletRequest) (int, error) {
-	url := fmt.Sprintf("%s/wallet/charge", wc.BaseURL)
+func (wc *PaymentClient) Charge(payload request.PaymentRequest) (int, error) {
+	url := fmt.Sprintf("%s/payment/charge", wc.BaseURL)
 
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
