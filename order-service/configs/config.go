@@ -14,6 +14,9 @@ type Config struct {
 	ServerPort   string `mapstructure:"SERVER_PORT"`
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 
+	// payment service configs
+	PaymentClientBaseUrl string `mapstructure:"PAYMENT_CLIENT_BASE_URL"`
+
 	// rmq configs
 	RMQUrl         string `mapstructure:"RMQ_URL"`
 	RMQQueueName   string `mapstructure:"RMQ_QUEUE_NAME"`

@@ -1,8 +1,8 @@
 package request
 
 type PaymentRequest struct {
-	RequestID string  `json:"request_id"`
-	ProductId string  `json:"product_id" binding:"required"`
+	RequestID string  `json:"requestId"`
+	ProductId string  `json:"productId" binding:"required"`
 	Amount    float64 `json:"amount"`
-	AccountID string  `json:"account_id"`
+	AccountID string  `json:"accountId"`
 }

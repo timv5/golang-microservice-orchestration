@@ -32,7 +32,7 @@ func main() {
 		panic("Failed to connect to DB")
 	}
 
-	paymentClient := client.NewPaymentClient("TODO")
+	paymentClient := client.NewPaymentClient(config.PaymentClientBaseUrl)
 	redisDatabase := initializeRedisCache(config)
 
 	// initialize repository

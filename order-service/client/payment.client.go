@@ -10,7 +10,7 @@ import (
 )
 
 type PaymentClientInterface interface {
-	Charge(payload request.PaymentRequest) (int, error)
+	Process(payload request.PaymentRequest) (int, error)
 }
 
 type PaymentClient struct {
@@ -27,8 +27,8 @@ func NewPaymentClient(baseURL string) *PaymentClient {
 	}
 }
 
-func (wc *PaymentClient) Charge(payload request.PaymentRequest) (int, error) {
-	url := fmt.Sprintf("%s/payment/charge", wc.BaseURL)
+func (wc *PaymentClient) Process(payload request.PaymentRequest) (int, error) {
+	url := fmt.Sprintf("%s/api/payment/process", wc.BaseURL)
 
 	bodyBytes, err := json.Marshal(payload)
 	if err != nil {
