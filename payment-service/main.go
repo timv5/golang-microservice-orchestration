@@ -58,7 +58,7 @@ func main() {
 func initializeRedisCache(config configs.Config) *redis.Client {
 	redisDb, err := strconv.Atoi(config.RedisDb)
 	if err != nil {
-		panic("Could not initialize app, error converting redis db configs")
+		panic("Could not initialize app, error converting redis db config")
 	}
 	redisDatabase := redis.NewClient(&redis.Options{
 		Addr:     config.RedisHost + ":" + config.RedisPort,

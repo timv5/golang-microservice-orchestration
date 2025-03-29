@@ -3,26 +3,26 @@ package configs
 import "github.com/spf13/viper"
 
 type Config struct {
-	// database configs
+	// database config
 	DBHost         string `mapstructure:"POSTGRES_HOST"`
 	DBUsername     string `mapstructure:"POSTGRES_USER"`
 	DBUserPassword string `mapstructure:"POSTGRES_PASSWORD"`
 	DBName         string `mapstructure:"POSTGRES_NAME"`
 	DBPort         string `mapstructure:"POSTGRES_PORT"`
 
-	// app configs
+	// app config
 	ServerPort   string `mapstructure:"SERVER_PORT"`
 	ClientOrigin string `mapstructure:"CLIENT_ORIGIN"`
 
-	// payment service configs
+	// payment service config
 	PaymentClientBaseUrl string `mapstructure:"PAYMENT_CLIENT_BASE_URL"`
 
-	// rmq configs
+	// rmq config
 	RMQUrl         string `mapstructure:"RMQ_URL"`
 	RMQQueueName   string `mapstructure:"RMQ_QUEUE_NAME"`
 	RMQExchangeKey string `mapstructure:"RMQ_EXCHANGE_KEY"`
 
-	// redis configs
+	// redis config
 	RedisHost string `mapstructure:"REDIS_HOST"`
 	RedisPort string `mapstructure:"REDIS_PORT"`
 	RedisDb   string `mapstructure:"REDIS_DB"`
