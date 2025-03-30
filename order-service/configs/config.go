@@ -26,6 +26,14 @@ type Config struct {
 	RedisHost string `mapstructure:"REDIS_HOST"`
 	RedisPort string `mapstructure:"REDIS_PORT"`
 	RedisDb   string `mapstructure:"REDIS_DB"`
+
+	// orchestration
+	OrchestrationExpirationTimeSeconds int64  `mapstructure:"ORCHESTRATION_EXPIRATION_TIME_SECONDS"`
+	OrchestrationMapName               string `mapstructure:"ORCHESTRATION_MAP_NAME"`
+	// produce when rollback starts
+	RMQExpiredEventQueue string `mapstructure:"RMQ_EXPIRED_EVENT_QUEUE"`
+	// consume and execute rollback of an order
+	RMQRollbackEventOrderQueue string `mapstructure:"RMQ_ROLLBACK_ORDER_EVENT_QUEUE"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

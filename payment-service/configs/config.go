@@ -16,8 +16,11 @@ type Config struct {
 
 	// rmq config
 	RMQUrl         string `mapstructure:"RMQ_URL"`
-	RMQQueueName   string `mapstructure:"RMQ_QUEUE_NAME"`
 	RMQExchangeKey string `mapstructure:"RMQ_EXCHANGE_KEY"`
+	// produce when rollback starts
+	RMQExpiredEventQueue string `mapstructure:"RMQ_EXPIRED_EVENT_QUEUE"`
+	// consume and execute rollback of an order
+	RMQRollbackEventPaymentQueue string `mapstructure:"RMQ_ROLLBACK_PAYMENT_EVENT_QUEUE"`
 
 	// redis config
 	RedisHost string `mapstructure:"REDIS_HOST"`

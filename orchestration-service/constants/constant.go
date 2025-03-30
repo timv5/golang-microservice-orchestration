@@ -1,6 +1,6 @@
 package constants
 
 const (
-	StatusRollback           = "ROLLBACK"
-	StatusRollbackInProgress = "IN_PROGRESS"
+	StatusRollback   = "ROLLBACK"
+	StatusInProgress = "IN_PROGRESS"
 )

@@ -56,5 +56,10 @@ func (orderHandler OrderHandler) MakeOrder(ctx *gin.Context) {
 		return
 	}
 
+	if response.ProductOrderId == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{})
+		return
+	}
+
 	ctx.JSON(http.StatusOK, response)
 }

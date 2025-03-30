@@ -9,6 +9,7 @@ import (
 	"order-service/configs"
 	"order-service/dto/request"
 	"order-service/dto/response"
+	"order-service/orchestration"
 	"order-service/repository"
 )
 
@@ -17,12 +18,13 @@ type OrderServiceInterface interface {
 }
 
 type OrderService struct {
-	conf              *configs.Config
-	postgresDB        *gorm.DB
-	orderRepository   *repository.OrderRepository
-	redisService      *RedisService
-	paymentClient     *client.PaymentClient
-	productRepository *repository.ProductRepository
+	conf                 *configs.Config
+	postgresDB           *gorm.DB
+	orderRepository      *repository.OrderRepository
+	redisService         *RedisService
+	paymentClient        *client.PaymentClient
+	productRepository    *repository.ProductRepository
+	orchestrationManager *orchestration.Manager
 }
 
 func NewOrderService(
@@ -31,14 +33,16 @@ func NewOrderService(
 	orderRepository *repository.OrderRepository,
 	redisService *RedisService,
 	paymentClient *client.PaymentClient,
-	productRepository *repository.ProductRepository) *OrderService {
+	productRepository *repository.ProductRepository,
+	orchestrationManager *orchestration.Manager) *OrderService {
 	return &OrderService{
-		conf:              config,
-		postgresDB:        postgresDB,
-		orderRepository:   orderRepository,
-		redisService:      redisService,
-		paymentClient:     paymentClient,
-		productRepository: productRepository,
+		conf:                 config,
+		postgresDB:           postgresDB,
+		orderRepository:      orderRepository,
+		redisService:         redisService,
+		paymentClient:        paymentClient,
+		productRepository:    productRepository,
+		orchestrationManager: orchestrationManager,
 	}
 }
 
@@ -49,6 +53,11 @@ func (os *OrderService) Create(request request.OrderRequest) (response.OrderResp
 	}
 	if !valid {
 		return response.OrderResponse{}, errors.New("idempotency validation error")
+	}
+
+	err = os.orchestrationManager.Start(request.RequestId)
+	if err != nil {
+		return response.OrderResponse{}, err
 	}
 
 	tx := os.getDbConnection()
@@ -69,11 +78,9 @@ func (os *OrderService) Create(request request.OrderRequest) (response.OrderResp
 		return response.OrderResponse{}, err
 	}
 
-	// call payment-service
-	uuid := uuid.NewV4().String()
 	paymentRequest := client.PaymentRequest{
 		RequestID: request.RequestId,
-		UUID:      uuid, // new uuid is passed to payment service for the sake of idempotency
+		UUID:      uuid.NewV4().String(),
 		ProductId: request.ProductId,
 		AccountID: request.AccountID,
 		Amount:    product.Price,
@@ -85,7 +92,6 @@ func (os *OrderService) Create(request request.OrderRequest) (response.OrderResp
 	}
 
 	if statusCode != http.StatusOK {
-		// todo rollback on payment side
 		tx.Rollback()
 		return response.OrderResponse{}, err
 	}
@@ -93,6 +99,15 @@ func (os *OrderService) Create(request request.OrderRequest) (response.OrderResp
 	err = tx.Commit().Error
 	if err != nil {
 		tx.Rollback()
+		err := os.orchestrationManager.Rollback(request.RequestId)
+		if err != nil {
+			return response.OrderResponse{}, err
+		}
+		return response.OrderResponse{}, err
+	}
+
+	err = os.orchestrationManager.End(request.RequestId)
+	if err != nil {
 		return response.OrderResponse{}, err
 	}
 
@@ -104,8 +119,8 @@ func (os *OrderService) Create(request request.OrderRequest) (response.OrderResp
 	}, nil
 }
 
-func (orderService *OrderService) getDbConnection() *gorm.DB {
-	tx := orderService.postgresDB.Begin()
+func (os *OrderService) getDbConnection() *gorm.DB {
+	tx := os.postgresDB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()

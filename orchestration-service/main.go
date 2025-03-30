@@ -49,14 +49,14 @@ func (a *App) processExpiredOrchestrations(ctx context.Context) {
 		return
 	}
 	for id, val := range records {
-		var entity dto.OrchestrationEntity
+		var entity dto.OrchestrationModel
 		if err := json.Unmarshal([]byte(val), &entity); err != nil {
 			log.Println("Error unmarshaling record", id, ":", err)
 			continue
 		}
 
 		if entity.ExpirationTime < now {
-			newEntity := dto.OrchestrationEntity{
+			newEntity := dto.OrchestrationModel{
 				UUID:           entity.UUID,
 				Status:         constants.StatusRollback,
 				ExpirationTime: time.Now().UnixMilli() + a.config.OrchestrationExpirationTimeSeconds*1000,
@@ -74,13 +74,13 @@ func (a *App) processExpiredOrchestrations(ctx context.Context) {
 }
 
 // atomically replaces a record in Redis if the current value matches what is expected.
-func (a *App) updateIfMatch(ctx context.Context, key string, oldEntity, newEntity dto.OrchestrationEntity) error {
+func (a *App) updateIfMatch(ctx context.Context, key string, oldEntity, newEntity dto.OrchestrationModel) error {
 	return a.redisClient.Watch(ctx, func(tx *redis.Tx) error {
 		currentVal, err := tx.HGet(ctx, a.config.OrchestrationMapName, key).Result()
 		if err != nil {
 			return err
 		}
-		var currentEntity dto.OrchestrationEntity
+		var currentEntity dto.OrchestrationModel
 		if err := json.Unmarshal([]byte(currentVal), &currentEntity); err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (a *App) processRollback(ctx context.Context, orchestrationId string) error
 		return err
 	}
 
-	var entity dto.OrchestrationEntity
+	var entity dto.OrchestrationModel
 	if err := json.Unmarshal([]byte(val), &entity); err != nil {
 		return err
 	}
@@ -133,9 +133,9 @@ func (a *App) processRollback(ctx context.Context, orchestrationId string) error
 		log.Println("Orchestration", orchestrationId, "status is not ROLLBACK, skipping")
 		return nil
 	}
-	newEntity := dto.OrchestrationEntity{
+	newEntity := dto.OrchestrationModel{
 		UUID:           entity.UUID,
-		Status:         constants.StatusRollbackInProgress,
+		Status:         constants.StatusInProgress,
 		ExpirationTime: time.Now().UnixMilli() + a.config.OrchestrationExpirationTimeSeconds*1000,
 	}
 	if err := a.updateIfMatch(ctx, orchestrationId, entity, newEntity); err != nil {
@@ -144,8 +144,13 @@ func (a *App) processRollback(ctx context.Context, orchestrationId string) error
 	}
 	log.Println("Processing rollback for orchestration", orchestrationId)
 
-	if err := a.publishRMQEvent(orchestrationId, a.config.RMQRollbackEventQueue); err != nil {
-		log.Println("Failed to publish rollback event for", orchestrationId, ":", err)
+	// we have to publish 2 events on 2 queues for each consumer, as rmq does not support other elegant solution
+	if err := a.publishRMQEvent(orchestrationId, a.config.RMQRollbackEventPaymentQueue); err != nil {
+		log.Println("Failed to publish payment rollback event for", orchestrationId, ":", err)
+		return err
+	}
+	if err := a.publishRMQEvent(orchestrationId, a.config.RMQRollbackEventOrderQueue); err != nil {
+		log.Println("Failed to publish order rollback event for", orchestrationId, ":", err)
 		return err
 	}
 	log.Println("Published rollback event for orchestration", orchestrationId)
@@ -237,7 +242,20 @@ func initRabbitMQ(cfg config.Config) (*amqp.Connection, *amqp.Channel, error) {
 		return nil, nil, err
 	}
 	_, err = ch.QueueDeclare(
-		cfg.RMQRollbackEventQueue,
+		cfg.RMQRollbackEventOrderQueue,
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		ch.Close()
+		conn.Close()
+		return nil, nil, err
+	}
+	_, err = ch.QueueDeclare(
+		cfg.RMQRollbackEventPaymentQueue,
 		true,
 		false,
 		false,

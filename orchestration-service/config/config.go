@@ -14,7 +14,8 @@ type Config struct {
 	RMQUrl               string `mapstructure:"RMQ_URL"`
 	RMQExchangeKey       string `mapstructure:"RMQ_EXCHANGE_KEY"`
 	// this queue is consumed by related service, for example order-service
-	RMQRollbackEventQueue string `mapstructure:"RMQ_ROLLBACK_EVENT_QUEUE"`
+	RMQRollbackEventPaymentQueue string `mapstructure:"RMQ_ROLLBACK_PAYMENT_EVENT_QUEUE"`
+	RMQRollbackEventOrderQueue   string `mapstructure:"RMQ_ROLLBACK_ORDER_EVENT_QUEUE"`
 
 	OrchestrationExpirationTimeSeconds int64  `mapstructure:"ORCHESTRATION_EXPIRATION_TIME_SECONDS"`
 	OrchestrationMapName               string `mapstructure:"ORCHESTRATION_MAP_NAME"`
