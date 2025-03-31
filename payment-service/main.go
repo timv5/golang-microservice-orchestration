@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/streadway/amqp"
+	"gorm.io/gorm"
 	"log"
 	"payment-service/configs"
 	"payment-service/handler"
@@ -47,7 +48,7 @@ func main() {
 	rmqConn := initializeRabbitMQ(config)
 	defer rmqConn.Close()
 	// Initialize rollback consumer on a separate channel
-	cancelRollbackConsumer := initializeRollbackConsumer(config, rmqConn)
+	cancelRollbackConsumer := initializeRollbackConsumer(postgresDB, config, rmqConn, transactionRepository, accountRepository)
 	defer cancelRollbackConsumer()
 
 	server = gin.Default()
@@ -92,12 +93,12 @@ func initializeRabbitMQ(cfg configs.Config) *amqp.Connection {
 	return conn
 }
 
-func initializeRollbackConsumer(cfg configs.Config, conn *amqp.Connection) context.CancelFunc {
+func initializeRollbackConsumer(postgresDB *gorm.DB, cfg configs.Config, conn *amqp.Connection, transactionRepository *repository.TransactionRepository, accountRepository *repository.AccountRepository) context.CancelFunc {
 	rollbackChannel, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("Failed to open channel for rollback consumer: %v", err)
 	}
-	rollbackConsumer := orchestration.NewRollbackConsumer(&cfg, rollbackChannel)
+	rollbackConsumer := orchestration.NewRollbackConsumer(postgresDB, &cfg, rollbackChannel, accountRepository, transactionRepository)
 	consumerCtx, consumerCancel := context.WithCancel(context.Background())
 
 	if err := rollbackConsumer.Consume(consumerCtx); err != nil {

@@ -10,4 +10,5 @@ type Transaction struct {
 	Amount        float64   `gorm:"type:numeric;not null"`
 	CreateDate    time.Time `gorm:"not null" sql:"createDate"`
 	RequestId     string    `gorm:"not null" sql:"requestId"`
+	AccountId     string    `gorm:"not null" sql:"accountId"`
 }

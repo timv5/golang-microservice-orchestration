@@ -29,7 +29,8 @@ create table transactions
     product_id varchar(512) not null,
     amount numeric,
     create_date date,
-    request_id varchar(512) not null
+    request_id varchar(512) not null,
+    account_id varchar(512) not null
 );
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

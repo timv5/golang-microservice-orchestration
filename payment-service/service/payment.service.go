@@ -56,6 +56,7 @@ func (ps *PaymentService) ProcessPayment(req request.PaymentRequest) error {
 		Amount:        req.Amount,
 		CreateDate:    time.Now().UTC(),
 		RequestId:     req.RequestID,
+		AccountId:     req.AccountID,
 	}
 	if err := ps.transactionRepository.Insert(tx, newTxn); err != nil {
 		tx.Rollback()
