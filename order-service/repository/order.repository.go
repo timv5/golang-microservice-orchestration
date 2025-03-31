@@ -10,6 +10,7 @@ import (
 
 type OrderRepositoryInterface interface {
 	Insert(tx *gorm.DB, order request.OrderRequest) (model.ProductOrder, error)
+	Delete(tx *gorm.DB, requestId string) error
 }
 
 type OrderRepository struct{}
@@ -34,4 +35,9 @@ func (repo *OrderRepository) Insert(tx *gorm.DB, order request.OrderRequest) (mo
 	}
 
 	return orderEntity, nil
+}
+
+func (repo *OrderRepository) Delete(tx *gorm.DB, requestId string) error {
+	result := tx.Where("request_id = ?", requestId).Delete(&model.ProductOrder{})
+	return result.Error
 }
